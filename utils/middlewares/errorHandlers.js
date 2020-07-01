@@ -9,7 +9,7 @@ const withErrorStack = (error, stack) => {
 };
 
 const logErrors = (err, req, res, next) => {
-  console.log(err);
+  // console.log(err);
   next(err);
 };
 
