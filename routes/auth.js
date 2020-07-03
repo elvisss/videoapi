@@ -5,7 +5,10 @@ const jwt = require('jsonwebtoken');
 const ApiKeysService = require('../services/apiKeys');
 const { config } = require('../config');
 const validationHandler = require('../utils/middlewares/validationHandler');
-const { createUserSchema } = require('../utils/schemas/users');
+const {
+  createUserSchema,
+  createProviderUserSchema,
+} = require('../utils/schemas/users');
 const UsersService = require('../services/users');
 
 // Basic Strategy
@@ -71,11 +74,11 @@ const authApi = (app) => {
     const { body: user } = req;
 
     try {
-      const userExists = await usersService.getUser(user)
+      const userExists = await usersService.getUser(user);
       if (userExists) {
         return res.status(400).send({
-          message: 'user already exists'
-        })
+          message: 'user already exists',
+        });
       }
     } catch (error) {
       next(error);
@@ -92,6 +95,46 @@ const authApi = (app) => {
       next(error);
     }
   });
+
+  router.post(
+    '/sign-provider',
+    validationHandler(createProviderUserSchema),
+    async (req, res, next) => {
+      const { body } = req;
+
+      const { apiKeyToken, ...user } = body;
+
+      if (!apiKeyToken) {
+        next(boom.unauthorized('apiKeyToken is required'));
+      }
+
+      try {
+        const queryUser = await usersService.getOrCreateUser({ user });
+        const apiKey = await apiKeysService.getApiKey({ token: apiKeyToken });
+
+        if (!apiKey) {
+          next(boom.unauthorized());
+        }
+
+        const { _id: id, name, email } = queryUser;
+
+        const payload = {
+          sub: id,
+          name,
+          email,
+          scopes: apiKey.scopes,
+        };
+
+        const token = jwt.sign(payload, config.authJwtSecret, {
+          expiresIn: '15m',
+        });
+
+        return res.status(200).json({ token, user: { id, name, email } });
+      } catch (err) {
+        next(err);
+      }
+    }
+  );
 };
 
 module.exports = authApi;
