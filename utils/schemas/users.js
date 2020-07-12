@@ -1,6 +1,6 @@
 const joi = require('@hapi/joi');
 
-const userIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/);
+const userIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/).required();
 
 const userSchema = {
   name: joi.string().max(100).required(),

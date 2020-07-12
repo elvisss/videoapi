@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const boom = require('@hapi/boom');
 const { config } = require('../../config');
 
@@ -9,18 +10,16 @@ const withErrorStack = (error, stack) => {
 };
 
 const logErrors = (err, req, res, next) => {
-  console.log(err);
   next(err);
 };
 
 const wrapErrors = (err, req, res, next) => {
-  if (!err.isBooom) {
-    next(boom.badImplementation(err));
+  if (!err.isBoom) {
+    next(boom.badImplementation());
   }
   next(err);
 };
 
-// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   const {
     output: { statusCode, payload },

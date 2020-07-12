@@ -10,6 +10,7 @@ const {
   createProviderUserSchema,
 } = require('../utils/schemas/users');
 const UsersService = require('../services/users');
+const { THIRTY_DAYS, FIFTY_MINUTES } = require('../utils/time');
 
 // Basic Strategy
 require('../utils/auth/strategies/basic');
@@ -55,7 +56,7 @@ const authApi = (app) => {
           };
 
           const token = jwt.sign(payload, config.authJwtSecret, {
-            expiresIn: '15m',
+            expiresIn: config.dev ? THIRTY_DAYS : FIFTY_MINUTES,
           });
 
           return res.status(200).json({ token, user: { id, name, email } });
@@ -126,7 +127,7 @@ const authApi = (app) => {
         };
 
         const token = jwt.sign(payload, config.authJwtSecret, {
-          expiresIn: '15m',
+          expiresIn: config.dev ? THIRTY_DAYS : FIFTY_MINUTES,
         });
 
         return res.status(200).json({ token, user: { id, name, email } });
